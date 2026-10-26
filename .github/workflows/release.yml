@@ -29,7 +29,7 @@ env:
 jobs:
   # Cut the GitHub Release first so all matrix jobs upload to the same one.
   create-release:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     outputs:
       tag: ${{ steps.tag.outputs.value }}
       version: ${{ steps.tag.outputs.version }}
@@ -80,7 +80,7 @@ jobs:
           - target: x86_64-pc-windows-msvc
             os: windows-latest
             archive: zip
-    runs-on: ${{ matrix.os }}
+    runs-on: "${{ (matrix.os) == 'macos-latest' && fromJSON('[\"self-hosted\",\"macOS\",\"ARM64\"]') || (matrix.os) == 'ubuntu-latest' && fromJSON('[\"self-hosted\",\"linux\",\"x64\"]') || (matrix.os) == 'windows-latest' && fromJSON('[\"self-hosted\",\"windows\",\"x64\"]') || (matrix.os) }}"
     steps:
       - uses: actions/checkout@v4
 
@@ -110,7 +110,7 @@ jobs:
   # Publish the release once all matrix builds succeed.
   publish:
     needs: [create-release, build]
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
       - name: Publish
